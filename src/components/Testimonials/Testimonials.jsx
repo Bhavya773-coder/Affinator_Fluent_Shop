@@ -42,19 +42,32 @@ const testimonials = [
 ];
 
 function Testimonials() {
-  const containerRef = useRef(null);
+  const sectionRef = useRef(null);
+  const scrollRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
-  const isInView = useInView(containerRef, { once: true, margin: '-100px' });
+  const isInView = useInView(sectionRef, { once: true, margin: '-100px' });
+
+  const handleLoopReset = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const half = el.scrollWidth / 2;
+    if (half <= 0) return;
+    if (el.scrollLeft >= half) {
+      el.scrollLeft = el.scrollLeft - half;
+    }
+  };
 
   useEffect(() => {
     if (isHovered) return;
 
     const interval = setInterval(() => {
-      if (containerRef.current) {
-        containerRef.current.scrollBy({
+      const el = scrollRef.current;
+      if (el) {
+        el.scrollBy({
           left: 1,
-          behavior: 'smooth',
+          behavior: 'auto',
         });
+        handleLoopReset();
       }
     }, 20);
 
@@ -62,7 +75,7 @@ function Testimonials() {
   }, [isHovered]);
 
   return (
-    <section id="reviews" ref={containerRef} className={styles.testimonials}>
+    <section id="reviews" ref={sectionRef} className={styles.testimonials}>
       <div className={styles.container}>
         <motion.div
           className={styles.header}
@@ -75,9 +88,17 @@ function Testimonials() {
         </motion.div>
 
         <div
+          ref={scrollRef}
           className={styles.scrollContainer}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
+          onPointerDown={() => setIsHovered(true)}
+          onPointerUp={() => setIsHovered(false)}
+          onPointerCancel={() => setIsHovered(false)}
+          onTouchStart={() => setIsHovered(true)}
+          onTouchEnd={() => setIsHovered(false)}
+          onTouchCancel={() => setIsHovered(false)}
+          onScroll={handleLoopReset}
         >
           <div className={styles.scrollContent}>
             {[...testimonials, ...testimonials].map((testimonial, index) => (
